@@ -2,7 +2,7 @@ currently in progress!
 
 # SimpleDB
 
-This is an implementation of SimpleDB (as seen in MIT 6.830 Database Systems with small modification made for CS133, Database Systems, at Harvey Mudd College). The course consists of the following labs, which implement major components of a relational database:
+This is an implementation of SimpleDB (as seen in MIT 6.830 Database Systems with small modifications made for CS133, Database Systems, at Harvey Mudd College). The course consists of the following labs, which implement major components of a relational database:
 
 - [X] Lab1: Buffer pool and heap files.
 
