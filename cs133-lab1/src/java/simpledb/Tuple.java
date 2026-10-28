@@ -1,8 +1,7 @@
 package simpledb;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Tuple maintains information about the contents of a tuple. Tuples have a
@@ -12,6 +11,9 @@ import java.util.Iterator;
 public class Tuple implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private TupleDesc schema;
+    private RecordId recordId;
+    private ArrayList<Field> fields;
 
     /**
      * Create a new tuple with the specified schema (type).
@@ -21,15 +23,19 @@ public class Tuple implements Serializable {
      *            instance with at least one field.
      */
     public Tuple(TupleDesc td) {
-        // TODO: some code goes here
+        schema = td;
+        fields = new ArrayList<Field>(td.numFields());
+
+        for (int i = 0; i < td.numFields(); i++) {
+            fields.add(null);
+        }
     }
 
     /**
      * @return The TupleDesc representing the schema of this tuple.
      */
     public TupleDesc getTupleDesc() {
-        // TODO: some code goes here
-        return null;
+        return schema;
     }
 
     /**
@@ -37,8 +43,7 @@ public class Tuple implements Serializable {
      *         Should return RecordId that was set with setRecordId(). May be null.
      */
     public RecordId getRecordId() {
-        // TODO: some code goes here
-        return null;
+        return recordId;
     }
 
     /**
@@ -48,7 +53,7 @@ public class Tuple implements Serializable {
      *            the new RecordId for this tuple.
      */
     public void setRecordId(RecordId rid) {
-        // TODO: some code goes here
+        recordId = rid;
     }
 
     /**
@@ -60,7 +65,7 @@ public class Tuple implements Serializable {
      *            new value for the field.
      */
     public void setField(int i, Field f) {
-        // TODO: some code goes here
+        fields.set(i, f);
     }
 
     /**
@@ -70,8 +75,7 @@ public class Tuple implements Serializable {
      *            field index to return. Must be a valid index.
      */
     public Field getField(int i) {
-        // TODO: some code goes here
-        return null;
+        return fields.get(i);
     }
 
     /**
@@ -83,26 +87,32 @@ public class Tuple implements Serializable {
      * where \t is any whitespace, except newline, and \n is a newline
      */
     public String toString() {
-        // TODO: some code goes here
-        throw new UnsupportedOperationException("Implement this");
+        String str = "";
+        for (Field field : fields) {
+            str = str + field.toString() + "\t";
+        }
+        
+        // Replace final character if we added it
+        if (str.length() == 0) {
+            return str;
+        } else {
+            return str.substring(0, str.length() - 1) + "\n";
+        }
     }
 
     /**
      * @return
      *        An iterator which iterates over all the fields of this tuple
      * */
-    public Iterator<Field> fields()
-    {
-        // TODO: some code goes here
-        return null;
+    public Iterator<Field> fields() {
+        return fields.iterator();
     }
 
     /**
      * Reset the TupleDesc of this tuple
      * (Only affecting the TupleDesc, does not need to worry about fields inside the Tuple)
      * */
-    public void resetTupleDesc(TupleDesc td)
-    {
-        // TODO: some code goes here
+    public void resetTupleDesc(TupleDesc td) {
+        schema = td;
     }
 }

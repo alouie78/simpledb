@@ -1,0 +1,24 @@
+Amanda Louie, Cameron Ake
+Time Spent: Lab 1 Parts 1 and 2 took around 12 hours total (6 hours for each part).
+
+Any unique design decisions we made for a given exercise are given below. We had some difficulties figuring out the iterators (particularly with figuring out how to implement the interfaces in a way that would be compatible with the demands of the assignment), but we were able to figure out what to do with the help of the grutors.
+
+Exercise 1:
+- In equals(), we had it check if the passed object was an instance of TupleDesc before doing anything else, so we could use TupleDesc methods on it, but that might be a problem if we wanted something that wasn’t a TupleDesc to be considered equal to a TupleDesc.
+- We used an ArrayList to store TupleDesc data so we could use the .iterator() method for it.
+- We stored length as an integer, tupleLength, for easier access to length in TupleDesc.
+- For fieldNameToIndex(), we just had it loop through and check, so fieldNameToIndex() is currently O(n), where n is the number of fields. We could also change this so we implement a HashMap here or something to that effect, if we wanted it to be O(1).
+- For Tuple.java, we imported java.util.* instead of java.util.Arrays and java.util.Iterator.
+
+Exercise 3:
+- We made our maxPages and hash map variables in our buffer pool non-static. We used a ConcurrentHashMap for BufferPool, since that was imported already
+
+Exercise 4:
+- RecordId hash code utilizes the pageId’s hash code and concatenates it with the tuple number.
+- We iterated naively through tuples to check the number of used tuples for getNumEmptySlots() (rather than creating a field for it in the class or anything fancy).
+
+Exercise 5:
+- We added IllegalArgumentException throwing to the DBFile/HeapFile readPage() method header so that we could implement our method with exceptions while being compatible with the interface.
+- Similarly, we added IllegalArgumentException throwing to the DBFile/HeapFile HeapFileIterator hasNext() method and next() header.
+- For hasNext() and next(), we had it loop through the file until it found a valid tuple or reached the end of the file. We moved the page-navigating work to hasNext() instead of next() so it wouldn’t do too much work twice.
+- close() just sets opened to false, but rewind() resets the iterator to the beginning of the file. (We were originally told to have close() call rewind(), but that ended up causing a failure on one of the tests.)

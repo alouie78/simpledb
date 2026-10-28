@@ -1,0 +1,36 @@
+Lab 2 Writeup
+
+Amanda Louie, Cameron Ake
+Time Spent: Lab 2 took around 10 hours total
+
+Any unique design decisions we made for a given exercise are given below. We had some difficulties with looping through tuples for the join, where we accidentally incremented both the outer and inner tuple when we called fetchNext instead of just the inner tuple (or the outer if the inner were done), and ended up having to use a weirder while loop format. We also had issues with inserting and deleting tuples within HeapPage and HeapFile (which was more of a silly mistake in that we had insertTuple insert tuples to fill an entire page and deleteTuple delete every instance of a particular tuple off the page). In both cases, though, especially for week 1, we were able to figure out what to do with the help of the grutors. 
+
+It was kind of confusing to handle all of the stuff with IntegerAggregator and StringAggregator needing to juggle so many different types, but we ended up managing that with the help of grutors.
+
+Week 1 (~3 hours)
+Part 1 (Exercise 1)
+For Join.java, we stored a currentTuple instance variable (corresponding to which left-tuple child we were on) so we would be able to carry over which left tuple we were on between iterator calls, and we set that variable to null at the start so we’d know to call next() on child1Iter before calling next() on child2Iter()
+For Join.java, we also stored all three of the left-child, right-child, and overall TupleDescs, just for ease of use
+We ended up opting for a while(true) loop so that we’d only get child1Iter’s next() at the end of the loop rather than at the start. We didn’t love that implementation decision, but it was the only thing that worked out of anything we thought of
+
+Week 2 (~5 hours)
+Part 2 (Exercise 2)
+Created HashMap<Object, Integer> in IntegerAggregator.java to store running aggregates
+Created separate avgCount HashMap<Object, Integer> if our operation is AVG, stores count of number of tuples
+For no groupings, set key value to 0
+For averaging, we did Math.round(sum / count), but it might have wanted us to do something else
+To create new StringFields, we used max length 128 (same as Type.java)
+
+Part 3 (Exercise 3)
+Imported ArrayList into BufferPool.java
+Utilized insertTuple() and deleteTuple() from HeapPage in HeapFile
+Utilized insertTuple() and deleteTuple() from HeapFile in BufferPool
+
+Week 3 (~2 hours)
+Part 4 (Exercise 4)
+Utilized BufferPool methods
+Specified getTupleDesc() to match tuples returned from fetchNext()
+
+Part 5 (Exercise 5)
+Eviction Policy: select pages to evict via earliest-added policy using a java.util.concurrent.ConcurrentLinkedQueue (i.e., whichever page is evicted is the page that was added first out of all the pages)
+Added pages to the Queue as they got added to the BufferPool in getPage(), evicted the earliest page added to the pool

@@ -30,13 +30,17 @@ public class BufferPool {
     Be sure to instantiate it in the constructor. */
     // private final LockManager lockmgr;
 
+    private int maxPages;
+    private ConcurrentHashMap<PageId, Page> pool;
+    
     /**
      * Creates a BufferPool that caches up to numPages pages.
      *
      * @param numPages maximum number of pages in this buffer pool.
      */
     public BufferPool(int numPages) {
-        // TODO: some code goes here
+        maxPages = numPages;
+        pool = new ConcurrentHashMap<PageId, Page>();
     }
 
     public static int getPageSize() {
@@ -71,10 +75,19 @@ public class BufferPool {
      * @param pid the ID of the requested page
      * @param perm the requested permissions on the page
      */
-    public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
+    public Page getPage(TransactionId tid, PageId pid, Permissions perm)
             throws TransactionAbortedException, DbException {
-        // TODO: some code goes here
-        return null;
+        if (pool.containsKey(pid)) {
+            return pool.get(pid);
+        } else if (pool.size() == this.maxPages) {
+            throw new DbException("Cannot store more than " + 
+            this.maxPages + " pages in buffer pool");
+        } else {
+            DbFile db = Database.getCatalog().getDatabaseFile(pid.getTableId());
+            Page p = db.readPage(pid);
+            pool.put(pid, p);
+            return p;
+        }
     }
 
     /**

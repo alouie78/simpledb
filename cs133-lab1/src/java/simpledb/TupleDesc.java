@@ -41,11 +41,12 @@ public class TupleDesc implements Serializable {
      *        that are included in this TupleDesc
      * */
     public Iterator<TDItem> iterator() {
-        // TODO: some code goes here
-        return null;
+        return itemAr.iterator();
     }
 
     private static final long serialVersionUID = 1L;
+    private ArrayList<TDItem> itemAr;
+    private int tupleLength;
 
     /**
      * Create a new TupleDesc with typeAr.length fields with fields of the
@@ -59,7 +60,14 @@ public class TupleDesc implements Serializable {
      *            be null.
      */
     public TupleDesc(Type[] typeAr, String[] fieldAr) {
-        // TODO: some code goes here
+        // Pass in initial capacity typeAr.length (shouldn't need to resize)
+        itemAr = new ArrayList<TDItem>(typeAr.length);
+        tupleLength = typeAr.length;
+
+        // transfer (type, field)s into itemAr
+        for (int i = 0; i < typeAr.length; i++) {
+            itemAr.add(i, new TDItem(typeAr[i], fieldAr[i]));
+        }
     }
 
     /**
@@ -71,15 +79,21 @@ public class TupleDesc implements Serializable {
      *            TupleDesc. It must contain at least one entry.
      */
     public TupleDesc(Type[] typeAr) {
-        // TODO: some code goes here
+        // Pass in initial capacity typeAr.length (shouldn't need to resize)
+        itemAr = new ArrayList<TDItem>(typeAr.length);
+        tupleLength = typeAr.length;
+
+        // transfer (type, field)s into itemAr
+        for (int i = 0; i < typeAr.length; i++) {
+            itemAr.add(i, new TDItem(typeAr[i], null));
+        }
     }
 
     /**
      * @return the number of fields in this TupleDesc
      */
     public int numFields() {
-        // TODO: some code goes here
-        return 0;
+        return itemAr.size();
     }
 
     /**
@@ -92,8 +106,12 @@ public class TupleDesc implements Serializable {
      *             if i is not a valid field reference.
      */
     public String getFieldName(int i) throws NoSuchElementException {
-        // TODO: some code goes here
-        return null;
+        if (i < 0 || i >= tupleLength) {
+            throw new NoSuchElementException("field index " + i + 
+                " out of bounds for length " + tupleLength + ", no such element");
+        } else {
+            return itemAr.get(i).fieldName;
+        }
     }
 
     /**
@@ -107,8 +125,12 @@ public class TupleDesc implements Serializable {
      *             if i is not a valid field reference.
      */
     public Type getFieldType(int i) throws NoSuchElementException {
-        // TODO: some code goes here
-        return null;
+        if (i < 0 || i >= tupleLength) {
+            throw new NoSuchElementException("field index " + i + 
+                " out of bounds for length " + tupleLength + ", no such element");
+        } else {
+            return itemAr.get(i).fieldType;
+        }    
     }
 
     /**
@@ -122,8 +144,18 @@ public class TupleDesc implements Serializable {
      *             if no field with a matching name is found.
      */
     public int fieldNameToIndex(String name) throws NoSuchElementException {
-        // TODO: some code goes here
-        return 0;
+        if (name == null) {
+            throw new NoSuchElementException("could not find field with name null");
+        }
+
+        int i = 0;
+        for (TDItem item : itemAr) {
+            if (item.fieldName != null && item.fieldName.equals(name)) {
+                return i;
+            }
+            i++;
+        }
+        throw new NoSuchElementException("could not find field with name " + name);
     }
 
     /**
@@ -132,8 +164,12 @@ public class TupleDesc implements Serializable {
      * @see Type#getSizeInBytes
      */
     public int getSizeInBytes() {
-        // TODO: some code goes here
-        return 0;
+        int numBytes = 0;
+        for (TDItem item : itemAr) {
+            int size = item.fieldType.getSizeInBytes();
+            numBytes += size;
+        }
+        return numBytes;
     }
 
     /**
@@ -147,8 +183,22 @@ public class TupleDesc implements Serializable {
      * @return the new TupleDesc
      */
     public static TupleDesc merge(TupleDesc td1, TupleDesc td2) {
-        // TODO: some code goes here
-        return null;
+        int combinedLength = td1.tupleLength + td2.tupleLength;
+
+        // Combine types and names into new arrays, then create TupleDesc
+        Type[] combinedTypes = new Type[combinedLength];
+        String[] combinedNames = new String[combinedLength];
+
+        for (int i = 0; i < td1.tupleLength; i++) {
+            combinedTypes[i] = td1.getFieldType(i);
+            combinedNames[i] = td1.getFieldName(i);
+        }
+        for (int i = td1.tupleLength; i < combinedLength; i++) {
+            combinedTypes[i] = td2.getFieldType(i - td1.tupleLength);
+            combinedNames[i] = td2.getFieldName(i - td1.tupleLength);
+        }
+
+        return new TupleDesc(combinedTypes, combinedNames);
     }
 
     /**
@@ -162,8 +212,19 @@ public class TupleDesc implements Serializable {
      * @return true if the object is equal to this TupleDesc.
      */
     public boolean equals(Object o) {
-        // TODO: some code goes here
-        return false;
+        if (!(o instanceof TupleDesc)) {
+            return false;
+        } else if (((TupleDesc) o).tupleLength != this.tupleLength) {
+            return false;
+        } else {
+            TupleDesc other = (TupleDesc) o;
+            for (int i = 0; i < this.tupleLength; i++) {
+                if (this.getFieldType(i) != other.getFieldType(i)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public int hashCode() {
@@ -180,7 +241,16 @@ public class TupleDesc implements Serializable {
      * @return String describing this descriptor.
      */
     public String toString() {
-        // TODO: some code goes here
-        return "";
+        String str = "";
+        for(TDItem item : itemAr) {
+            str = str + item.fieldName + "(" + item.fieldType + "), ";
+        }
+
+        // Cut off final two characters if we added them
+        if (str.length() == 0) {
+            return str;
+        } else {
+            return str.substring(0, str.length() - 2);
+        }
     }
 }

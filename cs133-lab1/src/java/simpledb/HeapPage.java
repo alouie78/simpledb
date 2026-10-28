@@ -13,6 +13,41 @@ import java.io.*;
  */
 public class HeapPage implements Page {
 
+    public class HeapPageIter implements Iterator<Tuple> {
+
+        private int tupleNum;
+
+        public HeapPageIter() {
+            tupleNum = -1;
+        }
+
+        public boolean hasNext() {
+            int nextTuple = tupleNum + 1;
+
+            while(nextTuple < numSlots) {
+                if(isSlotUsed(nextTuple)) {
+                    return true;
+                }
+                nextTuple++;
+            }
+
+            return false;
+        }
+
+        public Tuple next() throws NoSuchElementException {
+            tupleNum++;
+
+            while(tupleNum < numSlots) {
+                if(isSlotUsed(tupleNum)) {
+                    return tuples[tupleNum];
+                }
+                tupleNum++;
+            }
+
+            throw new NoSuchElementException("No next element");
+        }
+    }
+
     final HeapPageId pid;
     final TupleDesc td;
     final byte header[];
@@ -66,9 +101,7 @@ public class HeapPage implements Page {
         @return the number of tuple slots on this page
      */
     private int getNumTuples() {        
-        // TODO: some code goes here
-        return 0;
-
+        return (int) (Math.floor(((double) BufferPool.getPageSize() * 8) / (td.getSizeInBytes() * 8 + 1)));
     }
 
     /**
@@ -76,9 +109,7 @@ public class HeapPage implements Page {
      * @return the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
      */
     private int getHeaderSize() {        
-
-        // TODO: some code goes here
-        return 0;
+        return (int) (Math.ceil(((double) this.numSlots) / 8));
 
     }
 
@@ -111,8 +142,7 @@ public class HeapPage implements Page {
      * @return the PageId associated with this page.
      */
     public HeapPageId getId() {
-        // TODO: some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return pid;
     }
 
     /**
@@ -243,8 +273,28 @@ public class HeapPage implements Page {
      * @param t The tuple to delete
      */
     public void deleteTuple(Tuple t) throws DbException {
-        // TODO: some code goes here
-        // not necessary for lab1
+        // We accidentally tried to implement this method, then realized 
+        // we didn't have to. We've kept an early draft of our code around 
+        // in a comment for use later.
+
+        /*
+        HeapPageIter i = new HeapPageIter();
+
+        // iterate through tuples to find tuple
+        while (i.hasNext()) {
+            Tuple currentTuple = i.next();
+
+            if (t.getRecordId().equals(currentTuple.getRecordId())) {
+                byte bitMask = (byte) (1 << i.getBit());
+                // xor to replace bit of tuple we want to delete
+                byte deletion = (byte) (header[i.getByte()] ^ bitMask);
+
+                header[i.getByte()] = deletion;
+            }
+        }
+
+        throw new DbException("tuple not found");
+        */
     }
 
     /**
@@ -283,16 +333,24 @@ public class HeapPage implements Page {
      * Returns the number of empty slots on this page.
      */
     public int getNumEmptySlots() {
-        // TODO: some code goes here
-        return 0;
+        int numTuples = 0;
+        HeapPageIter i = new HeapPageIter();
+
+        while (i.hasNext()) {
+            Tuple currentTuple = i.next();
+            numTuples++;
+        }
+        
+        return numSlots - numTuples;
     }
 
     /**
      * Returns true if associated slot on this page is filled.
      */
     public boolean isSlotUsed(int i) {
-        // TODO: some code goes here
-        return false;
+        int byteNum = (int) Math.floor((double) i / 8);
+        int bitNum = i % 8;
+        return (this.header[byteNum] & (1 << bitNum)) != 0;
     }
 
     /**
@@ -310,8 +368,7 @@ public class HeapPage implements Page {
      * (note that this iterator shouldn't return tuples in empty slots!)
      */
     public Iterator<Tuple> iterator() {
-        // TODO: some code goes here
-        return null;
+        return new HeapPageIter();
     }
 
 }
